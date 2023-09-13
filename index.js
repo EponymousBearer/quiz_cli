@@ -1,67 +1,68 @@
-#!/usr/bin/env node
-import chalk from 'chalk';
 import readline from 'readline';
+import chalk from 'chalk';
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
 });
-async function waitForPlayerInput(prompt) {
-    return new Promise((resolve) => {
-        rl.question(prompt, (answer) => {
-            resolve(answer);
-        });
-    });
-}
-class AdventureGame {
-    riddles = [
-        {
-            question: "I'm tall when I'm young, and short when I'm old. What am I?",
-            options: ["Candle", "Tree", "Person"],
-            correctAnswer: "Candle",
-        },
-        {
-            question: "I'm always hungry, I must always be fed. The finger I touch will soon turn red. What am I?",
-            options: ["Fire", "Vampire", "Dragon"],
-            correctAnswer: "Fire",
-        },
-        {
-            question: "What has keys but can't open locks?",
-            options: ["Keyboard", "Treasure Chest", "Map"],
-            correctAnswer: "Keyboard",
-        },
-    ];
-    currentRiddleIndex = 0;
-    correctAnswers = 0;
-    constructor() { }
-    async play() {
-        console.log(chalk.bold("\nWelcome to the Riddle Adventure Game!"));
-        while (this.currentRiddleIndex < this.riddles.length) {
-            this.displayRiddle();
-            const playerAnswer = await waitForPlayerInput("Your answer: ");
-            if (this.checkAnswer(playerAnswer)) {
-                console.log(chalk.green("Correct! Proceed to the next riddle."));
-                this.currentRiddleIndex++;
-                this.correctAnswers++;
-            }
-            else {
-                console.log(chalk.red("Incorrect. Better luck next time!"));
-                rl.close();
-                return;
-            }
+class Quiz {
+    questions;
+    currentQuestionIndex;
+    score;
+    constructor(questions) {
+        this.questions = questions;
+        this.currentQuestionIndex = 0;
+        this.score = 0;
+    }
+    start() {
+        console.log(chalk.yellow('Welcome to the Quiz Game!\n'));
+        this.askQuestion();
+    }
+    askQuestion() {
+        if (this.currentQuestionIndex < this.questions.length) {
+            const question = this.questions[this.currentQuestionIndex];
+            console.log(chalk.blue(`Question ${this.currentQuestionIndex + 1}: ${question.question}`));
+            question.options.forEach((option, index) => {
+                console.log(chalk.green(`${index + 1}. ${option}`));
+            });
+            rl.question(chalk.cyan('Enter the number of your answer: '), (answer) => {
+                const selectedOption = question.options[parseInt(answer) - 1];
+                if (selectedOption === question.correctAnswer) {
+                    console.log(chalk.green('Correct!\n'));
+                    this.score++;
+                }
+                else {
+                    console.log(chalk.red(`Incorrect. The correct answer is: ${question.correctAnswer}\n`));
+                }
+                this.currentQuestionIndex++;
+                this.askQuestion();
+            });
         }
-        console.log(chalk.bgMagenta("\nCongratulations! You found the treasure."));
+        else {
+            this.endGame();
+        }
+    }
+    endGame() {
+        console.log(chalk.yellow(`Quiz completed! Your score: ${this.score} out of ${this.questions.length}`));
         rl.close();
     }
-    displayRiddle() {
-        const riddle = this.riddles[this.currentRiddleIndex];
-        console.log(`\nRiddle ${this.currentRiddleIndex + 1}:`);
-        console.log(riddle.question);
-        console.log("Options: " + riddle.options.join(', '));
-    }
-    checkAnswer(playerAnswer) {
-        const riddle = this.riddles[this.currentRiddleIndex];
-        return playerAnswer.toLowerCase() === riddle.correctAnswer.toLowerCase();
-    }
 }
-const game = new AdventureGame();
-game.play();
+// Define your quiz questions here
+const questions = [
+    {
+        question: 'What is the capital of France?',
+        options: ['Paris', 'London', 'Berlin'],
+        correctAnswer: 'Paris',
+    },
+    {
+        question: 'Which planet is known as the Red Planet?',
+        options: ['Mars', 'Venus', 'Jupiter'],
+        correctAnswer: 'Mars',
+    },
+    {
+        question: 'What is the largest mammal in the world?',
+        options: ['Elephant', 'Blue Whale', 'Giraffe'],
+        correctAnswer: 'Blue Whale',
+    },
+];
+const quiz = new Quiz(questions);
+quiz.start();
